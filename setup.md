@@ -125,21 +125,35 @@ To set up MySQL replication between a source and a replica server, follow these 
    ```
    Replace `replica_server_ip` with your actual source server's IP.
 
-3. **Set Server ID:**
+
+2. **Edit MySQL Configuration:**
+   Open the MySQL configuration file on your source server:
+   ```bash
+   sudo nano /etc/mysql/mysql.conf.d/mysqld.cnf
+   ```
+3. **Update Bind Address:**
+   Replace the bind-address with your source server’s IP address(or the ip where you want to listen for db requests, which could be localhost if app is hosted in the same server, or a private ip address):
+
+   ```plaintext
+   bind-address = source_server_ip
+   ```
+
+   Replace `source_server_ip` with your actual source server's IP.
+4. **Set Server ID:**
    Uncomment the `server-id` line and set a unique ID:
 
    ```plaintext
    server-id = 1
    ```
 
-4. **Enable Binary Logging:**
+5. **Enable Binary Logging:**
    Uncomment the `log_bin` directive to enable binary logging:
 
    ```plaintext
    log_bin = /var/log/mysql/mysql-bin.log
    ```
 
-5. **Specify Databases to Replicate:**
+6. **Specify Databases to Replicate:**
    Uncomment and set the `binlog_do_db` directive to specify the database you want to replicate:
 
    ```plaintext
@@ -156,7 +170,7 @@ To set up MySQL replication between a source and a replica server, follow these 
    binlog_do_db = db_2
    ```
 
-6. **Restart MySQL:**
+7. **Restart MySQL:**
    Apply the changes by restarting MySQL:
    ```bash
    sudo systemctl restart mysql
