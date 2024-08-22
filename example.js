@@ -16,4 +16,4 @@ await prisma.post.create({
   data: {/** */},
 })
 
-// running this code won't work at all, its just for illustration purposes
+// running this file won't work at all, its just for illustration purposes. If you've setup a schema and prisma, it'll work
