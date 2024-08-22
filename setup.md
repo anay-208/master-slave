@@ -38,12 +38,12 @@ sudo systemctl start mysql.service
 Access mysql by
 
 ```bash
-sudo mysql
+sudo mysql -u root -p
 ```
 
 Run to create root user, make sure to create a root_password
 
-```bash
+```sql
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '<root_password>';
 ```
 
@@ -63,15 +63,19 @@ This will take you through a series of prompts where you can make some changes t
 
 If you elect to set up the Validate Password Plugin, any MySQL user you create that authenticates with a password will be required to have a password that satisfies the policy you select. The strongest policy level — which you can select by entering 2 — will require passwords to be at least eight characters long and include a mix of uppercase, lowercase, numeric, and special characters:
 
-Once done, change the security method for root user
+Once done, change the security method for
 
-```bash
+ root
+
+ user
+
+```sql
 ALTER USER 'root'@'localhost' IDENTIFIED WITH auth_socket;
 ```
 
 #### Create a user from which you'll connect to the database
 
-Access database using this command, and enter teh password which you set above(<root_password>)
+Access database using this command, and enter the password which you set above(<root_password>)
 
 ```bash
 mysql -u root -p
@@ -79,25 +83,25 @@ mysql -u root -p
 
 Create a user
 
-```
+```sql
 CREATE USER '<user_name>'@'localhost' IDENTIFIED WITH mysql_native_password BY '<user_password>';
 ```
 
-Grant the privelege which you want to provide
+Grant the privilege which you want to provide
 
-```bash
+```sql
 GRANT <PRIVILEGE> ON <database.table> TO '<user_name>'@'<host>';
 ```
 
-You might want to grant these priveleges:
+You might want to grant these privileges:
 
-```bash
+```sql
 GRANT CREATE, ALTER, DROP, INSERT, UPDATE, INDEX, DELETE, SELECT, REFERENCES, RELOAD on *.* TO '<user_name>'@'localhost' WITH GRANT OPTION;
 ```
 
-then flush priveleges & exit
+Then flush privileges & exit
 
-```bash
+```sql
 FLUSH PRIVILEGES;
 exit
 ```
@@ -108,7 +112,7 @@ In the future, to log in as your new MySQL user, you’d use a command like the 
 mysql -u <user_name> -p
 ```
 
-## Setup source server for replication
+## Setup server for replication
 
 To set up MySQL replication between a source and a replica server, follow these steps:
 
@@ -119,23 +123,7 @@ To set up MySQL replication between a source and a replica server, follow these 
    ```bash
    sudo ufw allow from replica_server_ip to any port 3306
    ```
-   Replace `replica_server_ip` with your replica server’s actual IP address.
-
-### Step 2: Configure the Source MySQL Database
-
-1. **Edit MySQL Configuration:**
-   Open the MySQL configuration file on your source server:
-   ```bash
-   sudo nano /etc/mysql/mysql.conf.d/mysqld.cnf
-   ```
-2. **Update Bind Address:**
-   Replace the bind-address with your source server’s IP address:
-
-   ```plaintext
-   bind-address = source_server_ip
-   ```
-
-   Replace `source_server_ip` with your actual source server's IP.
+   Replace `replica_server_ip` with your actual source server's IP.
 
 3. **Set Server ID:**
    Uncomment the `server-id` line and set a unique ID:
@@ -153,31 +141,33 @@ To set up MySQL replication between a source and a replica server, follow these 
 
 5. **Specify Databases to Replicate:**
    Uncomment and set the `binlog_do_db` directive to specify the database you want to replicate:
+
    ```plaintext
    binlog_do_db = db
    ```
 
-    If you want to replicate more than one database, you can add another `binlog_do_db` directive for every database you want to include. Below is an example of how this would look:
+   If you want to replicate more than one database, you can add another `binlog_do_db` directive for every database you want to include. Below is an example of how this would look:
 
-        ````ini
-        # /etc/mysql/mysql.conf.d/mysqld.cnf
-        . . .
-        binlog_do_db          = db
-        binlog_do_db          = db_1
-        binlog_do_db          = db_2
+   ```ini
+   # /etc/mysql/mysql.conf.d/mysqld.cnf
+   . . .
+   binlog_do_db = db
+   binlog_do_db = db_1
+   binlog_do_db = db_2
+   ```
 
-        6. **Restart MySQL:**
-        Apply the changes by restarting MySQL:
-        ```bash
-        sudo systemctl restart mysql
-        ````
+6. **Restart MySQL:**
+   Apply the changes by restarting MySQL:
+   ```bash
+   sudo systemctl restart mysql
+   ```
 
 ### Step 3: Create a Replication User
 
 1. **Open MySQL Shell:**
 
    ```bash
-   sudo mysql
+   sudo mysql -u root -p
    ```
 
 2. **Create a Replication User:**
@@ -242,12 +232,12 @@ To set up MySQL replication between a source and a replica server, follow these 
 ### Step 6: Start Replication on the Replica Server
 
 1. **Open MySQL Shell on the Replica:**
-
    ```bash
-   sudo mysql
+   sudo mysql -u root -p
    ```
 
-2. **Configure Replication Settings:** Make sure to put the `File` And `Position` Values here
+2. **Configure Replication Settings:** Make sure to put the `File` And `Position` Values here, and make sure that the user should be of the `replica_user` which was created.
+
    ```sql
    CHANGE REPLICATION SOURCE TO
    SOURCE_HOST='source_server_ip',
@@ -270,7 +260,7 @@ To set up MySQL replication between a source and a replica server, follow these 
 
 ### Step 7: Test Replication
 
-1. **Create a Table on the Source:**
+1. **Create a Table on the Source:** (Note, this doesn't need to be done for prisma)
 
    ```sql
    USE db;
@@ -289,16 +279,18 @@ To set up MySQL replication between a source and a replica server, follow these 
 This completes the basic setup of MySQL replication between your source and replica servers. Any changes made to the `db` database on the source will now be reflected on the replica.
 
 ### Sources:
+
 - https://www.digitalocean.com/community/tutorials/how-to-set-up-replication-in-mysql#step-1-adjusting-your-source-server-s-firewall
 - https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-20-04
 
 ## Setup Prisma
 
-- Create a new mysql user on both the VMs, and create new mysql user using [this docs](<https://www.digitalocean.com/community/tutorials/how-to-create-a-new-user-and-grant-permissions-in-mysql>)
+- Create a new mysql user on both the VMs, and create new mysql user using [this docs](https://www.digitalocean.com/community/tutorials/how-to-create-a-new-user-and-grant-permissions-in-mysql)
 
-- You can add an additional DB to prisma using [this docs](<https://www.prisma.io/docs/orm/prisma-client/setup-and-configuration/read-replicas>)
+- You can add an additional DB to prisma using [this docs](https://www.prisma.io/docs/orm/prisma-client/setup-and-configuration/read-replicas)
 
-- Incase you are beginner at prisma, check out [this docs](<https://www.prisma.io/docs/orm/prisma-client/setup-and-configuration/introduction>)
+- Incase you are beginner at prisma, check out [this docs](https://www.prisma.io/docs/orm/prisma-client/setup-and-configuration/introduction)
 
 ## Disclaimer
+
 There might be incorrect info, please report incase you find any
