@@ -1,5 +1,7 @@
 import List from "./components/list"
 import { getTodos } from "./db"
+export const dynamic = "force-dynamic";
+
 export default async function Page(){
   const todos = await getTodos()
   // await prisma.todo.create({

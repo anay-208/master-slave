@@ -9,7 +9,6 @@ type Todo = {
   title: string | null;
   done: boolean;
 };
-export const dynamic = "force-dynamic";
 
 
 export default function List({ todos }: { todos: Todo[] }) {
