@@ -44,7 +44,7 @@ sudo mysql -u root -p
 Run to create root user, make sure to create a root_password
 
 ```sql
-ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '<root_password>';
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '#SecurePassword1';
 ```
 
 Then exit mysql
@@ -63,11 +63,11 @@ This will take you through a series of prompts where you can make some changes t
 
 If you elect to set up the Validate Password Plugin, any MySQL user you create that authenticates with a password will be required to have a password that satisfies the policy you select. The strongest policy level — which you can select by entering 2 — will require passwords to be at least eight characters long and include a mix of uppercase, lowercase, numeric, and special characters:
 
-Once done, change the security method for
+Once done, change the security method for root user
+```bash
+mysql -u root -p
+```
 
- root
-
- user
 
 ```sql
 ALTER USER 'root'@'localhost' IDENTIFIED WITH auth_socket;
@@ -75,28 +75,22 @@ ALTER USER 'root'@'localhost' IDENTIFIED WITH auth_socket;
 
 #### Create a user from which you'll connect to the database
 
-Access database using this command, and enter the password which you set above(<root_password>)
-
-```bash
-mysql -u root -p
-```
-
 Create a user
 
 ```sql
-CREATE USER '<user_name>'@'localhost' IDENTIFIED WITH mysql_native_password BY '<user_password>';
+CREATE USER 'app'@'localhost' IDENTIFIED WITH mysql_native_password BY '#SecurePassword1';
 ```
 
 Grant the privilege which you want to provide
 
 ```sql
-GRANT <PRIVILEGE> ON <database.table> TO '<user_name>'@'<host>';
+GRANT <PRIVILEGE> ON <database.table> TO 'app'@'localhost';
 ```
 
 You might want to grant these privileges:
 
 ```sql
-GRANT CREATE, ALTER, DROP, INSERT, UPDATE, INDEX, DELETE, SELECT, REFERENCES, RELOAD on *.* TO '<user_name>'@'localhost' WITH GRANT OPTION;
+GRANT CREATE, ALTER, DROP, INSERT, UPDATE, INDEX, DELETE, SELECT, REFERENCES, RELOAD on *.* TO 'app'@'localhost' WITH GRANT OPTION;
 ```
 
 Then flush privileges & exit
@@ -109,7 +103,7 @@ exit
 In the future, to log in as your new MySQL user, you’d use a command like the following:
 
 ```bash
-mysql -u <user_name> -p
+mysql -u app -p
 ```
 
 ## Setup server for replication
@@ -186,11 +180,10 @@ To set up MySQL replication between a source and a replica server, follow these 
 
 2. **Create a Replication User:**
    ```sql
-   CREATE USER 'replica_user'@'replica_server_ip' IDENTIFIED WITH mysql_native_password BY 'password';
-   GRANT REPLICATION SLAVE ON *.* TO 'replica_user'@'replica_server_ip';
+   CREATE USER 'replica2'@'replica_server_ip' IDENTIFIED WITH mysql_native_password BY '#SecurePassword1';
+   GRANT REPLICATION SLAVE ON *.* TO 'replica2'@'replica_server_ip';
    FLUSH PRIVILEGES;
    ```
-   Replace `replica_user`, `replica_server_ip`, and `password` with your desired values.
 
 ### Step 4: Obtain Binary Log Coordinates
 
@@ -255,12 +248,11 @@ To set up MySQL replication between a source and a replica server, follow these 
    ```sql
    CHANGE REPLICATION SOURCE TO
    SOURCE_HOST='source_server_ip',
-   SOURCE_USER='replica_user',
-   SOURCE_PASSWORD='password',
+   SOURCE_USER='replica2',
+   SOURCE_PASSWORD='#SecurePassword1',
    SOURCE_LOG_FILE='mysql-bin.000001',
    SOURCE_LOG_POS=899;
    ```
-
 3. **Start Replication:**
 
    ```sql
@@ -274,7 +266,7 @@ To set up MySQL replication between a source and a replica server, follow these 
 
 ### Step 7: Test Replication
 
-1. **Create a Table on the Source:** (Note, this doesn't need to be done for prisma)
+1. **Create a Table on the Source:** (Note, this doesn't need to be done for prisma, as tables can be created using prisma)
 
    ```sql
    USE db;

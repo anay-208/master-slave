@@ -4,7 +4,7 @@ import { readReplicas } from '@prisma/extension-read-replicas'
 
 const prisma = new PrismaClient().$extends(
     readReplicas({
-        url: process.env.DATABASE_URL_REPLICA as string,
+        url: [process.env.DATABASE_URL_REPLICA as string, process.env.DATABASE_URL_REPLICA_2 as string]
       })
 )
 
